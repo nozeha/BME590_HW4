@@ -1,7 +1,7 @@
 %Write in lengths of your leg segments (Lu = upper leg; Ll=lower leg)
 
-Lu = 30;
-Ll = 30;
+Lu = 46;
+Ll = 38;
 x_off = Lu+Ll;
 y_off = 0;
 
