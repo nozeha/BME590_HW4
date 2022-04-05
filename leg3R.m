@@ -22,13 +22,13 @@ phi = data(:,4);
 Lu = 46; % upper leg length (cm)
 Ll = 38; % lower leg length (cm)
 
-th1 = [0.01; 0]; % initial angle theta1 (degrees)
-th2 = [-0.01; 0]; % initial angle theta2 (degrees)
-th3 = [0.01; 0]; % initial angle theta3 (degrees)
+th1(1) = 0.01; % initial angle theta1 (rad)
+th2(1) = -0.01; % initial angle theta2 (rad)
+th3(1) = 0.01; % initial angle theta3 (rad)
 
-th1d = [0; 0]; % initial angle theta1 (degrees)
-th2d = [0; 0]; % initial angle theta2 (degrees)
-th3d = [0; 0]; % initial angle theta3 (degrees)
+th1d(1) = 0; % initial angle theta1 (rad/s)
+th2d(1) = 0; % initial angle theta2 (rad/s)
+th3d(1) = 0; % initial angle theta3 (rad/s)
 
 J = zeros(3, 3); % initializing jacobian matrix
 invJ = zeros(3, 3); % initializing inverse-jacobian matrix
@@ -41,7 +41,7 @@ yDot = deriv3pt(y, interval);
 phiDot = deriv3pt(phi, interval);
 
 for k = 2:length(data)
-    nu = [xDot(k-1); yDot(k-1); phiDot(k-1)];
+    nu = [xDot(k); yDot(k); phiDot(k)];
 
     % calculate jacobian
     J(1, 1) = -1*Lu*sin(th1(k-1)) - Ll*sin(th1(k-1)+th2(k-1));
@@ -52,32 +52,22 @@ for k = 2:length(data)
     J(3, 2) = 1;
     J(3, 3) = 1;
 
-%     invJ(1, 1) = J(1, 1);
-%     invJ(1, 2) = J(2, 1);
-%     invJ(1, 3) = J(3, 1);
-%     invJ(2, 1) = J(1, 2);
-%     invJ(2, 2) = J(2, 2);
-%     invJ(2, 3) = J(3, 2);
-%     invJ(3, 1) = J(1, 3);
-%     invJ(3, 2) = J(2, 3);
-%     invJ(3, 3) = J(3, 3);
-
     thetaDot = inv(J) * nu;
 
     th1d(k) = thetaDot(1);
     th2d(k) = thetaDot(2);
     th3d(k) = thetaDot(3);
 
-    th1(k) = trapz(th1d(k-1:k)) + th1(k-1);
-    th2(k) = trapz(th2d(k-1:k)) + th2(k-1);
-    th3(k) = trapz(th3d(k-1:k)) + th3(k-1);
+    th1(k) = 0.5*interval*(th1d(k)+th1d(k-1)) + th1(k-1);
+    th2(k) = 0.5*interval*(th2d(k)+th2d(k-1))+ th2(k-1);
+    th3(k) = 0.5*interval*(th3d(k)+th3d(k-1))+ th3(k-1);
 end
 
 %% Output
 
-T = [time th1 th2 th3]; 
+T = [time th1' th2' th3']; 
 
 writematrix(T, 'theta.txt');
-% xlswrite('theta', T);
+%xlswrite('theta', T);
 
 toc
